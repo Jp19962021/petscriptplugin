@@ -1,0 +1,728 @@
+/* ==========================================================================
+   PetScript Rx Checkout — visual language matched to petscript-Pharmacy
+   (resources/css/app.css there). Tokens copied 1:1, components re-implemented
+   as plain CSS since this plugin has no Tailwind/Alpine build step.
+
+   Every color/border/shadow declaration on interactive elements below is
+   flagged !important and scoped under .ps-rxc-scope, mirroring how Pharmacy's
+   own Tailwind build scopes itself under #petscript-app with
+   `important: '#petscript-app'` — without it, arbitrary theme stylesheets
+   (button/input resets, accent colors) can and do win the cascade.
+   ========================================================================== */
+
+.ps-rxc-scope {
+	--ps-navy: #082B59;
+	--ps-navy-hover: #0A3570;
+	--ps-navy-deep: #061F43;
+	--ps-navy-lt: #E8EEF8;
+	--ps-cyan: #0EA5E9;
+
+	--g25: #FCFCFD;
+	--g50: #F8FAFC;
+	--g100: #F1F5F9;
+	--g200: #E2E8F0;
+	--g300: #CBD5E1;
+	--g400: #94A3B8;
+	--g500: #64748B;
+	--g600: #475569;
+	--g700: #334155;
+	--g800: #1E293B;
+	--g900: #0F172A;
+
+	--ok: #059669; --ok-bg: #ECFDF5; --ok-bd: #A7F3D0;
+	--warn: #D97706; --warn-bg: #FFFBEB; --warn-bd: #FDE68A;
+	--err: #DC2626; --err-bg: #FEF2F2; --err-bd: #FECACA;
+	--info: #2563EB; --info-bg: #EFF6FF; --info-bd: #BFDBFE;
+
+	--r-sm: 6px; --r: 8px; --r-lg: 10px; --r-xl: 14px; --r-full: 9999px;
+
+	--sh-sm: 0 1px 3px rgb(0 0 0/.08), 0 1px 2px rgb(0 0 0/.04);
+	--sh-md: 0 4px 10px -2px rgb(0 0 0/.08), 0 2px 4px -2px rgb(0 0 0/.04);
+	--sh-modal: 0 24px 64px -12px rgb(0 0 0/.18), 0 8px 24px -8px rgb(0 0 0/.10);
+
+	--t: 150ms cubic-bezier(.4,0,.2,1);
+
+	font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+	font-size: 14px;
+	line-height: 1.57;
+}
+
+.ps-rxc-scope *,
+.ps-rxc-scope *::before,
+.ps-rxc-scope *::after { box-sizing: border-box; }
+
+/* -- Header banner (once, above the cart table) -------------------------- */
+
+.ps-rxc-banner {
+	display: flex;
+	align-items: flex-start;
+	gap: .75rem;
+	padding: 1rem 1.25rem;
+	color: var(--g900) !important;
+	background: #fff !important;
+	border: 1px solid var(--g200) !important;
+	border-radius: var(--r-xl);
+	box-shadow: var(--sh-sm);
+	margin-bottom: 1.5rem;
+}
+
+.ps-rxc-banner__icon {
+	flex-shrink: 0;
+	width: 2rem;
+	height: 2rem;
+	border-radius: var(--r-full);
+	background: var(--warn-bg) !important;
+	color: var(--warn) !important;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.ps-rxc-banner__title {
+	font-size: .9375rem;
+	font-weight: 600;
+	color: var(--g900) !important;
+	letter-spacing: -.02em;
+	margin: 0 0 .1875rem;
+}
+
+.ps-rxc-banner__subtitle {
+	font-size: .8125rem;
+	color: var(--g600) !important;
+	margin: 0;
+	line-height: 1.5;
+}
+
+/* -- Inline prescription status, rendered under each cart product name --- */
+
+.ps-rxc-item-card {
+	margin-top: .625rem;
+	max-width: 16rem;
+}
+
+.ps-rxc-item-card__status {
+	display: flex;
+	align-items: center;
+	gap: .375rem;
+	margin: 0 0 .5rem;
+	font-size: .8125rem;
+	font-weight: 600;
+	letter-spacing: -.005em;
+}
+
+.ps-rxc-item-card--incomplete .ps-rxc-item-card__status { color: var(--warn) !important; }
+.ps-rxc-item-card--complete .ps-rxc-item-card__status { color: var(--ok) !important; }
+
+#ps-rxc-app .ps-rxc-item-card__btn,
+.ps-rxc-scope .ps-rxc-item-card__btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: .125rem !important;
+	width: auto;
+	padding: .09375rem .28125rem !important;
+	border-radius: 3px !important;
+	font-size: 1rem !important;
+	font-weight: 600 !important;
+	letter-spacing: 0 !important;
+	line-height: 1.2 !important;
+	cursor: pointer;
+	border: 1px solid var(--ps-navy) !important;
+	transition: all var(--t);
+	font-family: inherit;
+	background: #fff !important;
+	color: var(--ps-navy) !important;
+}
+.ps-rxc-scope .ps-rxc-item-card__btn svg { width: 6px !important; height: 6px !important; }
+
+/* Some browser extensions (font-size / accessibility adjusters) inject an
+   inline `style="font-size:12px"` directly onto text nodes. An inline style
+   without !important still loses to an !important rule in a stylesheet, but
+   it DOES win over inheritance from the parent button — so this has to
+   target the label span itself, not just .ps-rxc-item-card__btn. */
+.ps-rxc-scope .ps-rxc-item-card__btn [data-card-btn-label] { font-size: 1rem !important; }
+#ps-rxc-app .ps-rxc-item-card__btn:hover,
+.ps-rxc-scope .ps-rxc-item-card__btn:hover {
+	background: var(--ps-navy-lt) !important;
+}
+
+/* -- Buttons --------------------------------------------------------------- */
+
+.ps-rxc-scope .ps-rxc-btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: .5rem;
+	border-radius: var(--r);
+	padding: .5rem 1rem;
+	font-size: .875rem;
+	font-weight: 500;
+	letter-spacing: -.01em;
+	line-height: 1.4;
+	cursor: pointer;
+	transition: all var(--t);
+	border-width: 1px;
+	border-style: solid;
+	font-family: inherit;
+	text-decoration: none !important;
+}
+
+.ps-rxc-scope .ps-rxc-btn:disabled,
+.ps-rxc-scope .ps-rxc-btn.is-loading { opacity: .65; cursor: not-allowed; }
+
+/* Author rules always beat the UA `[hidden]{display:none}` rule regardless
+   of specificity, so any element that also matches `.ps-rxc-btn` (which sets
+   its own `display`) needs this explicit override or `hidden` silently does
+   nothing. */
+.ps-rxc-scope [hidden] { display: none !important; }
+
+.ps-rxc-scope .ps-rxc-btn--primary {
+	background: var(--ps-navy) !important;
+	color: #fff !important;
+	border-color: var(--ps-navy) !important;
+	box-shadow: 0 1px 2px rgb(0 0 0/.10);
+}
+.ps-rxc-scope .ps-rxc-btn--primary:hover:not(:disabled) {
+	background: var(--ps-navy-hover) !important;
+	border-color: var(--ps-navy-hover) !important;
+	color: #fff !important;
+}
+.ps-rxc-scope .ps-rxc-btn--primary:active:not(:disabled) { background: var(--ps-navy-deep) !important; transform: translateY(1px); }
+
+.ps-rxc-scope .ps-rxc-btn--secondary {
+	background: #fff !important;
+	color: var(--g700) !important;
+	border-color: var(--g200) !important;
+	box-shadow: var(--sh-sm);
+}
+.ps-rxc-scope .ps-rxc-btn--secondary:hover:not(:disabled) {
+	background: var(--g50) !important;
+	border-color: var(--g300) !important;
+	color: var(--g800) !important;
+}
+
+.ps-rxc-scope .ps-rxc-btn--sm { padding: .375rem .75rem; font-size: .8125rem; border-radius: var(--r-sm); }
+.ps-rxc-scope .ps-rxc-btn--block { display: flex; width: 100%; padding: .625rem 1rem; }
+
+/* -- Inputs ------------------------------------------------------------- */
+
+.ps-rxc-field { margin-bottom: 1rem; }
+.ps-rxc-field:last-child { margin-bottom: 0; }
+
+.ps-rxc-label {
+	display: block;
+	font-size: .8125rem;
+	font-weight: 500;
+	color: var(--g700) !important;
+	letter-spacing: -.005em;
+	margin-bottom: .375rem;
+}
+
+.ps-rxc-label .req { color: var(--err) !important; }
+
+.ps-rxc-scope .ps-rxc-input,
+.ps-rxc-scope .ps-rxc-select,
+.ps-rxc-scope .ps-rxc-textarea {
+	display: block;
+	width: 100%;
+	background: #fff !important;
+	border: 1px solid var(--g200) !important;
+	border-radius: var(--r);
+	padding: .5625rem .875rem;
+	font-size: .875rem;
+	color: var(--g900) !important;
+	line-height: 1.5;
+	box-shadow: 0 1px 2px rgb(0 0 0/.04);
+	transition: border-color var(--t), box-shadow var(--t);
+	font-family: inherit;
+}
+
+.ps-rxc-scope .ps-rxc-input:hover:not(:disabled),
+.ps-rxc-scope .ps-rxc-select:hover:not(:disabled) { border-color: var(--g300) !important; }
+
+.ps-rxc-scope .ps-rxc-input:focus,
+.ps-rxc-scope .ps-rxc-select:focus,
+.ps-rxc-scope .ps-rxc-textarea:focus {
+	border-color: var(--ps-navy) !important;
+	box-shadow: 0 0 0 3px rgb(8 43 89/.1) !important;
+	outline: none;
+}
+
+.ps-rxc-textarea { resize: vertical; min-height: 4.5rem; }
+
+.ps-rxc-input-error { border-color: var(--err) !important; box-shadow: 0 0 0 3px rgb(220 38 38/.1) !important; }
+
+.ps-rxc-error-msg { font-size: .75rem; color: var(--err) !important; margin-top: .25rem; }
+
+.ps-rxc-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; }
+
+@media (max-width: 640px) {
+	.ps-rxc-grid-2 { grid-template-columns: 1fr; }
+}
+
+/* -- Card-grid picker (matches petscript-Pharmacy's step selectors) ----- */
+
+.ps-rxc-modal__subtitle {
+	font-size: .8125rem;
+	color: var(--g500) !important;
+	margin: -.375rem 0 1rem;
+}
+
+/* -- Stepper (Patient → Veterinary Clinic → Review) ---------------------- */
+
+.ps-rxc-stepper {
+	display: flex;
+	align-items: center;
+	padding: 1rem 1.5rem;
+	border-bottom: 1px solid var(--g100);
+	flex-shrink: 0;
+}
+
+.ps-rxc-stepper__step { display: flex; align-items: center; gap: .5rem; flex-shrink: 0; }
+
+.ps-rxc-stepper__circle {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 1.75rem;
+	height: 1.75rem;
+	border-radius: var(--r-full);
+	background: var(--g100) !important;
+	color: var(--g500) !important;
+	font-size: .8125rem;
+	font-weight: 700;
+	flex-shrink: 0;
+	transition: all var(--t);
+}
+
+.ps-rxc-stepper__label {
+	font-size: .8125rem;
+	font-weight: 600;
+	color: var(--g400) !important;
+	white-space: nowrap;
+}
+
+.ps-rxc-stepper__line { flex: 1; height: 1px; background: var(--g200) !important; margin: 0 .75rem; min-width: 1rem; }
+
+.ps-rxc-stepper__step.is-active .ps-rxc-stepper__circle { background: var(--ps-navy) !important; color: #fff !important; }
+.ps-rxc-stepper__step.is-active .ps-rxc-stepper__label { color: var(--ps-navy) !important; }
+
+.ps-rxc-stepper__step.is-done .ps-rxc-stepper__circle { background: var(--ok) !important; color: #fff !important; }
+.ps-rxc-stepper__step.is-done .ps-rxc-stepper__label { color: var(--g700) !important; }
+
+/* -- Step panels ----------------------------------------------------------- */
+
+.ps-rxc-step__title { font-size: 1rem; font-weight: 600; color: var(--g900) !important; margin: 0 0 .25rem; letter-spacing: -.01em; }
+.ps-rxc-step__subtitle { font-size: .8125rem; color: var(--g500) !important; margin: 0 0 1rem; }
+
+.ps-rxc-list-toolbar { display: flex; gap: .625rem; margin-bottom: .875rem; }
+
+.ps-rxc-search-wrap { position: relative; flex: 1; }
+.ps-rxc-search-wrap svg { position: absolute; top: 50%; left: .75rem; transform: translateY(-50%); color: var(--g400) !important; pointer-events: none; }
+.ps-rxc-search-wrap .ps-rxc-input { padding-left: 2.125rem; }
+
+/* -- Single-column selectable list (patient / clinic) --------------------- */
+
+.ps-rxc-list {
+	display: flex;
+	flex-direction: column;
+	max-height: 16rem;
+	overflow-y: auto;
+	border: 1px solid var(--g200) !important;
+	border-radius: var(--r-lg);
+	margin-bottom: .875rem;
+}
+
+#ps-rxc-app .ps-rxc-list-row,
+.ps-rxc-scope .ps-rxc-list-row {
+	display: flex !important;
+	align-items: center !important;
+	gap: .75rem;
+	padding: .75rem .875rem;
+	background: #fff !important;
+	border-width: 0 !important;
+	border-style: solid !important;
+	border-bottom-width: 1px !important;
+	border-color: var(--g100) !important;
+	border-radius: 0 !important;
+	cursor: pointer;
+	text-align: left !important;
+	width: 100%;
+	font-family: inherit;
+	transition: background var(--t);
+}
+.ps-rxc-list-row:last-child { border-bottom-width: 0 !important; }
+.ps-rxc-list-row:hover { background: var(--g50) !important; }
+.ps-rxc-list-row.is-selected { background: var(--ps-navy-lt) !important; }
+
+#ps-rxc-app .ps-rxc-list-row--plain,
+.ps-rxc-scope .ps-rxc-list-row--plain {
+	padding: 0 !important;
+	border-width: 0 !important;
+	cursor: default !important;
+	background: transparent !important;
+}
+
+.ps-rxc-list-row__radio {
+	flex-shrink: 0;
+	width: 1.125rem;
+	height: 1.125rem;
+	border-radius: var(--r-full);
+	border: 1.5px solid var(--g300) !important;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+.ps-rxc-list-row.is-selected .ps-rxc-list-row__radio { border-color: var(--ps-navy) !important; }
+.ps-rxc-list-row.is-selected .ps-rxc-list-row__radio::after {
+	content: '';
+	width: .5rem;
+	height: .5rem;
+	border-radius: 50%;
+	background: var(--ps-navy) !important;
+}
+
+.ps-rxc-avatar {
+	flex-shrink: 0;
+	width: 2.25rem;
+	height: 2.25rem;
+	border-radius: var(--r-full);
+	background: var(--ps-navy-lt) !important;
+	color: var(--ps-navy) !important;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.ps-rxc-list-row__body { flex: 1; min-width: 0; }
+.ps-rxc-list-row__title { display: block; font-size: .875rem; font-weight: 600; color: var(--g900) !important; line-height: 1.3; }
+.ps-rxc-list-row__meta { display: block; font-size: .75rem; color: var(--g500) !important; margin-top: .125rem; line-height: 1.3; }
+
+.ps-rxc-empty { font-size: .8125rem; color: var(--g500) !important; padding: 1.5rem 1rem; text-align: center; }
+
+/* -- "Selected patient/clinic" summary strip ------------------------------ */
+
+.ps-rxc-selected-stack { display: flex; flex-direction: column; gap: .625rem; }
+
+.ps-rxc-selected-summary {
+	display: flex;
+	align-items: center;
+	gap: .75rem;
+	padding: .75rem .875rem;
+	background: var(--g25) !important;
+	border: 1px solid var(--g100) !important;
+	border-radius: var(--r-lg);
+}
+
+.ps-rxc-selected-summary__label { font-size: .6875rem; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; color: var(--g500) !important; display: block; margin-bottom: .125rem; }
+.ps-rxc-selected-summary__body { flex: 1; min-width: 0; }
+
+#ps-rxc-app .ps-rxc-link-btn,
+.ps-rxc-scope .ps-rxc-link-btn {
+	background: none !important;
+	border: none !important;
+	color: var(--ps-navy) !important;
+	font-size: .8125rem;
+	font-weight: 600;
+	cursor: pointer;
+	padding: 0;
+	flex-shrink: 0;
+	font-family: inherit;
+}
+#ps-rxc-app .ps-rxc-link-btn:hover,
+.ps-rxc-scope .ps-rxc-link-btn:hover { text-decoration: underline; }
+
+/* -- Review step ------------------------------------------------------- */
+
+.ps-rxc-review-grid {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: .875rem;
+	margin-bottom: 1rem;
+}
+
+@media (max-width: 560px) {
+	.ps-rxc-review-grid { grid-template-columns: 1fr; }
+}
+
+.ps-rxc-review-card {
+	padding: .875rem;
+	background: var(--g25) !important;
+	border: 1px solid var(--g100) !important;
+	border-radius: var(--r-lg);
+}
+
+.ps-rxc-review-card__label {
+	font-size: .6875rem;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: .04em;
+	color: var(--g500) !important;
+	margin: 0 0 .625rem;
+}
+
+.ps-rxc-review-card .ps-rxc-link-btn { margin-top: .625rem; }
+
+/* -- Trust note ---------------------------------------------------------- */
+
+.ps-rxc-trust-note {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: .375rem;
+	font-size: .75rem;
+	color: var(--g400) !important;
+	margin: 0;
+	padding: .625rem 1.5rem;
+	border-top: 1px solid var(--g100);
+	border-radius: 0 0 var(--r-xl) var(--r-xl);
+	flex-shrink: 0;
+}
+
+/* -- Modal ------------------------------------------------------------- */
+
+.ps-rxc-modal-backdrop {
+	position: fixed !important;
+	inset: 0 !important;
+	top: 0 !important;
+	left: 0 !important;
+	right: 0 !important;
+	bottom: 0 !important;
+	background: rgb(15 23 42/.55) !important;
+	backdrop-filter: blur(3px);
+	z-index: 999998 !important;
+	display: flex !important;
+	align-items: center;
+	justify-content: center;
+	padding: 1.5rem;
+	opacity: 0;
+	transition: opacity var(--t);
+}
+
+.ps-rxc-modal-backdrop.is-open { opacity: 1; }
+/* Must win over the base rule's `display: flex !important` above, or the
+   backdrop stays a full-viewport, fully-clickable (just invisible) layer
+   that silently swallows every click on the page, including on the very
+   buttons meant to open it. */
+.ps-rxc-modal-backdrop[hidden] { display: none !important; }
+
+.ps-rxc-modal {
+	background: #fff !important;
+	border-radius: var(--r-xl);
+	box-shadow: var(--sh-modal);
+	border: 1px solid var(--g200) !important;
+	width: 100%;
+	max-width: 36rem;
+	max-height: 90vh;
+	display: flex;
+	flex-direction: column;
+	z-index: 99999;
+	transform: translateY(1rem) scale(.97);
+	opacity: 0;
+	transition: transform var(--t), opacity var(--t);
+}
+
+.ps-rxc-modal--lg { max-width: 44rem; }
+
+.ps-rxc-modal__product { font-size: .8125rem; color: var(--g500) !important; margin: .125rem 0 0; }
+
+.ps-rxc-modal-backdrop.is-open .ps-rxc-modal { transform: translateY(0) scale(1); opacity: 1; }
+
+.ps-rxc-modal__header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 1rem;
+	padding: 1.25rem 1.5rem;
+	border-bottom: 1px solid var(--g100);
+	flex-shrink: 0;
+}
+
+.ps-rxc-modal__title { font-size: 1rem; font-weight: 600; color: var(--g900) !important; letter-spacing: -.02em; margin: 0; }
+
+.ps-rxc-scope .ps-rxc-modal__close {
+	width: 1.75rem;
+	height: 1.75rem;
+	border-radius: var(--r-sm);
+	color: var(--g400) !important;
+	background: transparent !important;
+	border: none !important;
+	box-shadow: none !important;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
+	padding: 0;
+}
+.ps-rxc-scope .ps-rxc-modal__close:hover { background: var(--g100) !important; color: var(--g700) !important; }
+
+.ps-rxc-modal__body { padding: 1.5rem; overflow-y: auto; flex: 1; }
+
+.ps-rxc-modal__footer {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	gap: .5rem;
+	padding: 1rem 1.5rem;
+	border-top: 1px solid var(--g100);
+	background: var(--g25) !important;
+	flex-shrink: 0;
+}
+
+.ps-rxc-modal__section-title {
+	font-size: .75rem;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: .04em;
+	color: var(--g500) !important;
+	margin: 1.25rem 0 .625rem;
+}
+.ps-rxc-modal__section-title:first-child { margin-top: 0; }
+
+/* -- Item modal sections (patient / clinic / preferences) --------------- */
+
+.ps-rxc-section {
+	padding: 1.25rem;
+	background: var(--g25) !important;
+	border: 1px solid var(--g100) !important;
+	border-radius: var(--r-lg);
+	margin-bottom: 1rem;
+}
+.ps-rxc-section:last-child { margin-bottom: 0; }
+
+.ps-rxc-section__title {
+	font-size: .75rem;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: .04em;
+	color: var(--g500) !important;
+	margin: 0 0 .75rem;
+}
+
+.ps-rxc-section__actions {
+	display: flex;
+	justify-content: flex-end;
+	gap: .5rem;
+	margin-top: .75rem;
+}
+
+/* -- Badge / alert / spinner ------------------------------------------- */
+
+.ps-rxc-alert {
+	display: flex;
+	align-items: flex-start;
+	gap: .5rem;
+	padding: .75rem;
+	border-radius: var(--r);
+	font-size: .8125rem;
+	margin-bottom: 1rem;
+}
+.ps-rxc-alert--error { background: var(--err-bg) !important; color: var(--err) !important; border: 1px solid var(--err-bd) !important; }
+.ps-rxc-alert--success { background: var(--ok-bg) !important; color: var(--ok) !important; border: 1px solid var(--ok-bd) !important; }
+
+.ps-rxc-badge {
+	display: inline-flex;
+	align-items: center;
+	gap: .3125rem;
+	padding: .1875rem .5625rem;
+	border-radius: var(--r-full);
+	font-size: .75rem;
+	font-weight: 500;
+	border: 1px solid transparent;
+}
+.ps-rxc-badge::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: currentColor; opacity: .9; }
+.ps-rxc-badge--ok { background: var(--ok-bg) !important; color: var(--ok) !important; border-color: var(--ok-bd) !important; }
+.ps-rxc-badge--pending { background: var(--warn-bg) !important; color: var(--warn) !important; border-color: var(--warn-bd) !important; }
+
+.ps-rxc-btn.is-loading { position: relative; color: transparent !important; }
+.ps-rxc-btn.is-loading::after {
+	content: '';
+	position: absolute;
+	width: 1rem;
+	height: 1rem;
+	border: 2px solid rgb(255 255 255/.4);
+	border-top-color: #fff;
+	border-radius: 50%;
+	animation: ps-rxc-spin .6s linear infinite;
+}
+.ps-rxc-btn--secondary.is-loading::after { border-color: rgb(51 65 85/.3); border-top-color: var(--g700); }
+
+@keyframes ps-rxc-spin { to { transform: rotate(360deg); } }
+
+/* -- Cart-sidebar "Prescription Status" widget --------------------------- */
+
+.ps-rxc-sidebar-widget {
+	margin-top: 1.5rem;
+	padding-top: 1.25rem;
+	border-top: 1px solid var(--g100);
+}
+
+.ps-rxc-sidebar-widget__title {
+	font-size: .9375rem;
+	font-weight: 600;
+	color: var(--g900) !important;
+	letter-spacing: -.01em;
+	margin: 0 0 .875rem;
+}
+
+.ps-rxc-sidebar-widget__row {
+	display: flex;
+	align-items: center;
+	gap: 1rem;
+}
+
+.ps-rxc-gauge {
+	position: relative;
+	flex-shrink: 0;
+	width: 76px;
+	height: 76px;
+}
+
+.ps-rxc-gauge svg { transform: rotate(-90deg); }
+
+.ps-rxc-gauge__track { stroke: var(--g100); }
+.ps-rxc-gauge__fill {
+	stroke: var(--ok);
+	transition: stroke-dashoffset .4s var(--ease, ease);
+}
+
+.ps-rxc-gauge__label {
+	position: absolute;
+	inset: 0;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	line-height: 1.1;
+}
+
+.ps-rxc-gauge__number { font-size: 1.25rem; font-weight: 700; color: var(--g900) !important; }
+.ps-rxc-gauge__of { font-size: .625rem; color: var(--g500) !important; }
+.ps-rxc-gauge__ready-label { font-size: .625rem; color: var(--g500) !important; }
+
+.ps-rxc-sidebar-widget__list {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	display: flex;
+	flex-direction: column;
+	gap: .375rem;
+	font-size: .8125rem;
+	color: var(--g700) !important;
+	flex: 1;
+}
+
+.ps-rxc-sidebar-widget__list li { display: flex; align-items: center; gap: .375rem; }
+
+.ps-rxc-sidebar-widget__icon { flex-shrink: 0; }
+.ps-rxc-sidebar-widget__icon--ok { color: var(--ok) !important; }
+.ps-rxc-sidebar-widget__icon--warn { color: var(--warn) !important; }
+
+.ps-rxc-sidebar-widget__hint {
+	font-size: .75rem !important;
+	color: var(--g500) !important;
+	margin-top: .125rem;
+	align-items: flex-start !important;
+}
+.ps-rxc-sidebar-widget__hint svg { margin-top: .0625rem; color: var(--g400) !important; }

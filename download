@@ -1,0 +1,12 @@
+# Dependencies (regenerate via `composer install`)
+/vendor
+
+# IDE / OS
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
