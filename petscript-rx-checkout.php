@@ -1,8 +1,8 @@
 <?php
 /**
  * Plugin Name: PetScript Rx Checkout
- * Description: Requiere datos de mascota y veterinario antes de pagar productos con receta, y envia la Rx a PetScript Pharmacy.
- * Version: 1.0.0
+ * Description: Requires pet and veterinarian information before checkout on prescription products, and sends the Rx to PetScript Pharmacy.
+ * Version: 1.1.0
  * Author: PetScript
  * Text Domain: petscript-rx-checkout
  * Requires Plugins: woocommerce
@@ -18,7 +18,7 @@ if (!defined('ABSPATH')) {
 define('PS_RXC_FILE', __FILE__);
 define('PS_RXC_DIR', __DIR__);
 define('PS_RXC_URL', plugin_dir_url(__FILE__));
-define('PS_RXC_VERSION', '1.0.0');
+define('PS_RXC_VERSION', '1.1.0');
 
 $autoload = PS_RXC_DIR . '/vendor/autoload.php';
 if (file_exists($autoload)) {

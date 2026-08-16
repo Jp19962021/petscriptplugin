@@ -7,6 +7,7 @@ use PetScript\RxCheckout\Domain\Clinic\ClinicRepository;
 use PetScript\RxCheckout\Domain\Patient\PatientRepository;
 use PetScript\RxCheckout\Domain\RxAssignment\ItemAssignmentStore;
 use PetScript\RxCheckout\Support\Config;
+use PetScript\RxCheckout\Support\Settings;
 
 final class CartNotice
 {
@@ -36,10 +37,24 @@ final class CartNotice
             return;
         }
 
+        $gmapsKey = Settings::googleMapsApiKey();
+        $panelDeps = [];
+
+        if ($gmapsKey !== '') {
+            wp_enqueue_script(
+                'ps-rxc-gmaps',
+                'https://maps.googleapis.com/maps/api/js?key=' . rawurlencode($gmapsKey) . '&libraries=places',
+                [],
+                null,
+                true
+            );
+            $panelDeps[] = 'ps-rxc-gmaps';
+        }
+
         // Bust the browser cache off each file's mtime instead of the static
         // plugin version, so edits during development are always picked up.
         wp_enqueue_style('ps-rxc-panel', PS_RXC_URL . 'assets/build/panel.css', [], (string) filemtime(PS_RXC_DIR . '/assets/build/panel.css'));
-        wp_enqueue_script('ps-rxc-panel', PS_RXC_URL . 'assets/build/panel.js', [], (string) filemtime(PS_RXC_DIR . '/assets/build/panel.js'), true);
+        wp_enqueue_script('ps-rxc-panel', PS_RXC_URL . 'assets/build/panel.js', $panelDeps, (string) filemtime(PS_RXC_DIR . '/assets/build/panel.js'), true);
 
         $items = [];
 
@@ -52,31 +67,41 @@ final class CartNotice
             ];
         }
 
+        $billingZip = '';
+
+        if (function_exists('WC') && WC()->customer) {
+            $billingZip = (string) WC()->customer->get_billing_postcode();
+        }
+
         wp_localize_script('ps-rxc-panel', 'psRxcPanel', [
             'ajaxUrl' => admin_url('admin-ajax.php'),
             'nonce' => wp_create_nonce(Config::NONCE_ACTION),
             'items' => $items,
+            'hasPlaces' => $gmapsKey !== '',
+            'billingZip' => $billingZip,
             'i18n' => [
                 'notSelected' => __('Not selected', 'petscript-rx-checkout'),
                 'addPatient' => __('Add New Patient', 'petscript-rx-checkout'),
                 'addClinic' => __('Add New Clinic', 'petscript-rx-checkout'),
                 'nameSpeciesRequired' => __('Name and species are required.', 'petscript-rx-checkout'),
                 'clinicNameRequired' => __('Clinic name is required.', 'petscript-rx-checkout'),
+                'vetNameRequired' => __("Veterinarian's first and last name are required.", 'petscript-rx-checkout'),
                 'networkError' => __('Network error. Please try again.', 'petscript-rx-checkout'),
                 'genericError' => __('Something went wrong. Please try again.', 'petscript-rx-checkout'),
                 'cardTitleRequired' => __('Prescription required', 'petscript-rx-checkout'),
-                'cardTitleAdded' => __('Prescription added', 'petscript-rx-checkout'),
-                'addBtn' => __('Add Prescription', 'petscript-rx-checkout'),
-                'editBtn' => __('Edit Prescription', 'petscript-rx-checkout'),
+                'cardTitleAdded' => __('Pet / vet info added', 'petscript-rx-checkout'),
+                'addBtn' => __('Add Pet / Vet Info', 'petscript-rx-checkout'),
+                'editBtn' => __('Edit Pet / Vet Info', 'petscript-rx-checkout'),
                 'selectFields' => __('Please choose a patient, clinic, and fill in all preferences.', 'petscript-rx-checkout'),
                 'selectPatientFirst' => __('Please select a patient to continue.', 'petscript-rx-checkout'),
                 'selectClinicFirst' => __('Please select a veterinary clinic to continue.', 'petscript-rx-checkout'),
                 'selectedPatient' => __('Selected patient', 'petscript-rx-checkout'),
                 'selectedClinic' => __('Selected clinic', 'petscript-rx-checkout'),
                 'change' => __('Change', 'petscript-rx-checkout'),
-                'noResults' => __('No results found.', 'petscript-rx-checkout'),
+                'noResults' => __('No clinics found. You can add yours below.', 'petscript-rx-checkout'),
                 'noPatients' => __('You don\'t have any saved patients yet.', 'petscript-rx-checkout'),
-                'noClinics' => __('You don\'t have any saved clinics yet.', 'petscript-rx-checkout'),
+                'noClinics' => __('Search for your clinic above, or add a new one.', 'petscript-rx-checkout'),
+                'searching' => __('Searching…', 'petscript-rx-checkout'),
             ],
         ]);
     }

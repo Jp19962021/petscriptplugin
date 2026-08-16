@@ -15,11 +15,13 @@ use PetScript\RxCheckout\Http\Ajax\ListPatientsHandler;
 use PetScript\RxCheckout\Http\Ajax\SaveClinicHandler;
 use PetScript\RxCheckout\Http\Ajax\SavePatientHandler;
 use PetScript\RxCheckout\Http\Ajax\SaveRxAssignmentHandler;
+use PetScript\RxCheckout\Http\Ajax\SearchClinicsHandler;
 use PetScript\RxCheckout\Install\Installer;
 use PetScript\RxCheckout\Integration\PayloadMapper;
 use PetScript\RxCheckout\Integration\PharmacyApiClient;
 use PetScript\RxCheckout\WooCommerce\CartGate;
 use PetScript\RxCheckout\WooCommerce\CartNotice;
+use PetScript\RxCheckout\WooCommerce\CheckoutAddressAutocomplete;
 use PetScript\RxCheckout\WooCommerce\CheckoutGuard;
 use PetScript\RxCheckout\WooCommerce\OrderAdminColumn;
 use PetScript\RxCheckout\WooCommerce\OrderSnapshot;
@@ -55,13 +57,14 @@ final class Plugin
         (new CartGate($checker, $assignments))->register();
         (new CartNotice($checker, $assignments, $patients, $clinics))->register();
         (new CheckoutGuard($checker))->register();
+        (new CheckoutAddressAutocomplete())->register();
         (new OrderSnapshot($assignments, $patients, $clinics))->register();
 
         $submitter = new OrderSubmitter($mapper, new PharmacyApiClient());
         $submitter->register();
 
         (new OrderAdminColumn($submitter, $mapper))->register();
-        (new SettingsPage())->register();
+        (new SettingsPage(new ClinicRepository()))->register();
     }
 
     private function registerAjaxHandlers(
@@ -78,6 +81,7 @@ final class Plugin
             new SaveClinicHandler($clinics),
             new ListClinicsHandler($clinics),
             new DeleteClinicHandler($clinics),
+            new SearchClinicsHandler($clinics),
             new SaveRxAssignmentHandler($patients, $clinics, $assignments, $checker),
         ];
 

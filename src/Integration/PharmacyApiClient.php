@@ -19,7 +19,7 @@ final class PharmacyApiClient
 
         if (Settings::isTestMode()) {
             if (function_exists('wc_get_logger')) {
-                wc_get_logger()->info('TEST MODE — payload no enviado: ' . wp_json_encode($payload), ['source' => 'petscript-rx-checkout']);
+                wc_get_logger()->info('TEST MODE — payload not sent: ' . wp_json_encode($payload), ['source' => 'petscript-rx-checkout']);
             }
 
             return PharmacyApiResult::success('TEST-' . wp_generate_password(8, false));

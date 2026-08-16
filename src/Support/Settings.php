@@ -10,6 +10,8 @@ final class Settings
 
     private const OPTION_TEST_MODE = 'ps_rxc_test_mode';
 
+    private const OPTION_GMAPS_KEY = 'ps_rxc_google_maps_api_key';
+
     public static function pharmacyBaseUrl(): string
     {
         $value = get_option(self::OPTION_BASE_URL, '');
@@ -64,6 +66,18 @@ final class Settings
     public static function updateTestMode(bool $enabled): void
     {
         update_option(self::OPTION_TEST_MODE, $enabled ? 'yes' : 'no');
+    }
+
+    public static function googleMapsApiKey(): string
+    {
+        $value = get_option(self::OPTION_GMAPS_KEY, '');
+
+        return is_string($value) ? trim($value) : '';
+    }
+
+    public static function updateGoogleMapsApiKey(string $key): void
+    {
+        update_option(self::OPTION_GMAPS_KEY, sanitize_text_field($key));
     }
 
     public static function externalOrdersEndpoint(): string

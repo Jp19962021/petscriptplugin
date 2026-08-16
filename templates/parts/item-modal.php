@@ -1,4 +1,7 @@
 <?php
+
+use PetScript\RxCheckout\Support\Config;
+
 if (!defined('ABSPATH')) {
     exit;
 }
@@ -7,7 +10,7 @@ if (!defined('ABSPATH')) {
     <div class="ps-rxc-modal ps-rxc-modal--lg" role="dialog" aria-modal="true" aria-labelledby="ps-rxc-item-modal-title">
         <div class="ps-rxc-modal__header">
             <div>
-                <h3 class="ps-rxc-modal__title" id="ps-rxc-item-modal-title"><?php esc_html_e('Prescription information', 'petscript-rx-checkout'); ?></h3>
+                <h3 class="ps-rxc-modal__title" id="ps-rxc-item-modal-title"><?php esc_html_e('Pet / vet information', 'petscript-rx-checkout'); ?></h3>
                 <p class="ps-rxc-modal__product" id="ps-rxc-item-modal-product"></p>
             </div>
             <button type="button" class="ps-rxc-modal__close" data-close-modal aria-label="<?php esc_attr_e('Close', 'petscript-rx-checkout'); ?>">
@@ -71,7 +74,12 @@ if (!defined('ABSPATH')) {
                             </div>
                             <div class="ps-rxc-field">
                                 <label class="ps-rxc-label" for="ps-rxc-ip-species"><?php esc_html_e('Species', 'petscript-rx-checkout'); ?> <span class="req">*</span></label>
-                                <input class="ps-rxc-input" type="text" id="ps-rxc-ip-species" name="species" required />
+                                <select class="ps-rxc-select" id="ps-rxc-ip-species" name="species" required>
+                                    <option value=""><?php esc_html_e('Select…', 'petscript-rx-checkout'); ?></option>
+                                    <?php foreach (Config::SPECIES as $species) : ?>
+                                        <option value="<?php echo esc_attr($species); ?>"><?php echo esc_html($species); ?></option>
+                                    <?php endforeach; ?>
+                                </select>
                             </div>
                         </div>
                         <div class="ps-rxc-grid-2">
@@ -124,21 +132,26 @@ if (!defined('ABSPATH')) {
 
                 <div id="ps-rxc-item-clinic-list-view">
                     <h4 class="ps-rxc-step__title"><?php esc_html_e('Select a veterinary clinic', 'petscript-rx-checkout'); ?></h4>
-                    <p class="ps-rxc-step__subtitle"><?php esc_html_e('Choose the clinic where this patient receives care.', 'petscript-rx-checkout'); ?></p>
+                    <p class="ps-rxc-step__subtitle"><?php esc_html_e('Search our clinic directory, or pick one of your saved clinics.', 'petscript-rx-checkout'); ?></p>
 
                     <div class="ps-rxc-list-toolbar">
                         <div class="ps-rxc-search-wrap">
                             <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="m17 17-3.5-3.5M15.33 9.17a6.17 6.17 0 1 1-12.33 0 6.17 6.17 0 0 1 12.33 0Z"/></svg>
                             <input type="search" id="ps-rxc-item-clinic-search" class="ps-rxc-input"
-                                   placeholder="<?php esc_attr_e('Search clinics by name…', 'petscript-rx-checkout'); ?>" />
+                                   placeholder="<?php esc_attr_e('Search by name or phone number', 'petscript-rx-checkout'); ?>" />
                         </div>
-                        <button type="button" class="ps-rxc-btn ps-rxc-btn--secondary ps-rxc-btn--sm" data-show-form="clinic">
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
-                            <?php esc_html_e('Add Clinic', 'petscript-rx-checkout'); ?>
-                        </button>
+                        <div class="ps-rxc-search-wrap" style="max-width: 140px;">
+                            <input type="text" id="ps-rxc-item-clinic-zip" class="ps-rxc-input" inputmode="numeric" maxlength="10"
+                                   placeholder="<?php esc_attr_e('Near ZIP code', 'petscript-rx-checkout'); ?>" />
+                        </div>
                     </div>
 
                     <div id="ps-rxc-item-clinic-list" class="ps-rxc-list"></div>
+
+                    <p class="ps-rxc-step__subtitle" style="margin-top: 10px;">
+                        <?php esc_html_e("Don't see your clinic?", 'petscript-rx-checkout'); ?>
+                        <button type="button" class="ps-rxc-link-btn" data-show-form="clinic"><?php esc_html_e('Add a new vet clinic.', 'petscript-rx-checkout'); ?></button>
+                    </p>
 
                     <div class="ps-rxc-selected-stack">
                         <div id="ps-rxc-clinic-step-patient-summary" class="ps-rxc-selected-summary"></div>
@@ -147,7 +160,7 @@ if (!defined('ABSPATH')) {
                 </div>
 
                 <div id="ps-rxc-item-clinic-form-view" hidden>
-                    <p class="ps-rxc-step__subtitle"><?php esc_html_e('Add a new clinic. You can add more than one before you continue.', 'petscript-rx-checkout'); ?></p>
+                    <p class="ps-rxc-step__subtitle"><?php esc_html_e('Add a new clinic. It will be available for this order right away.', 'petscript-rx-checkout'); ?></p>
                     <div id="ps-rxc-item-clinic-form-error" class="ps-rxc-alert ps-rxc-alert--error" hidden></div>
                     <form id="ps-rxc-item-clinic-form" novalidate>
                         <div class="ps-rxc-field">
@@ -156,17 +169,22 @@ if (!defined('ABSPATH')) {
                         </div>
                         <div class="ps-rxc-grid-2">
                             <div class="ps-rxc-field">
-                                <label class="ps-rxc-label" for="ps-rxc-ic-phone"><?php esc_html_e('Phone', 'petscript-rx-checkout'); ?></label>
-                                <input class="ps-rxc-input" type="text" id="ps-rxc-ic-phone" name="phone" />
+                                <label class="ps-rxc-label" for="ps-rxc-ic-vet-first"><?php esc_html_e("Veterinarian's first name", 'petscript-rx-checkout'); ?> <span class="req">*</span></label>
+                                <input class="ps-rxc-input" type="text" id="ps-rxc-ic-vet-first" name="vet_first_name" required />
                             </div>
                             <div class="ps-rxc-field">
-                                <label class="ps-rxc-label" for="ps-rxc-ic-country"><?php esc_html_e('Country (2-letter code)', 'petscript-rx-checkout'); ?></label>
-                                <input class="ps-rxc-input" type="text" maxlength="2" id="ps-rxc-ic-country" name="country" placeholder="US" />
+                                <label class="ps-rxc-label" for="ps-rxc-ic-vet-last"><?php esc_html_e("Veterinarian's last name", 'petscript-rx-checkout'); ?> <span class="req">*</span></label>
+                                <input class="ps-rxc-input" type="text" id="ps-rxc-ic-vet-last" name="vet_last_name" required />
                             </div>
                         </div>
                         <div class="ps-rxc-field">
+                            <label class="ps-rxc-label" for="ps-rxc-ic-phone"><?php esc_html_e('Phone', 'petscript-rx-checkout'); ?></label>
+                            <input class="ps-rxc-input" type="text" id="ps-rxc-ic-phone" name="phone" />
+                        </div>
+                        <div class="ps-rxc-field">
                             <label class="ps-rxc-label" for="ps-rxc-ic-address"><?php esc_html_e('Address', 'petscript-rx-checkout'); ?></label>
-                            <input class="ps-rxc-input" type="text" id="ps-rxc-ic-address" name="address" />
+                            <input class="ps-rxc-input" type="text" id="ps-rxc-ic-address" name="address" autocomplete="off"
+                                   placeholder="<?php esc_attr_e('Start typing to search the address…', 'petscript-rx-checkout'); ?>" />
                         </div>
                         <div class="ps-rxc-grid-2">
                             <div class="ps-rxc-field">
@@ -178,9 +196,15 @@ if (!defined('ABSPATH')) {
                                 <input class="ps-rxc-input" type="text" id="ps-rxc-ic-state" name="state" />
                             </div>
                         </div>
-                        <div class="ps-rxc-field">
-                            <label class="ps-rxc-label" for="ps-rxc-ic-postal"><?php esc_html_e('Postal code', 'petscript-rx-checkout'); ?></label>
-                            <input class="ps-rxc-input" type="text" id="ps-rxc-ic-postal" name="postal_code" />
+                        <div class="ps-rxc-grid-2">
+                            <div class="ps-rxc-field">
+                                <label class="ps-rxc-label" for="ps-rxc-ic-postal"><?php esc_html_e('ZIP code', 'petscript-rx-checkout'); ?></label>
+                                <input class="ps-rxc-input" type="text" id="ps-rxc-ic-postal" name="postal_code" />
+                            </div>
+                            <div class="ps-rxc-field">
+                                <label class="ps-rxc-label" for="ps-rxc-ic-country"><?php esc_html_e('Country (2-letter code)', 'petscript-rx-checkout'); ?></label>
+                                <input class="ps-rxc-input" type="text" maxlength="2" id="ps-rxc-ic-country" name="country" placeholder="US" />
+                            </div>
                         </div>
                     </form>
                     <div class="ps-rxc-section__actions">
@@ -209,13 +233,13 @@ if (!defined('ABSPATH')) {
                 </div>
 
                 <div class="ps-rxc-section">
-                    <p class="ps-rxc-section__title"><?php esc_html_e('Preferences', 'petscript-rx-checkout'); ?></p>
+                    <p class="ps-rxc-section__title"><?php esc_html_e('Prescription approval', 'petscript-rx-checkout'); ?></p>
                     <div class="ps-rxc-field">
-                        <label class="ps-rxc-label" for="ps-rxc-item-approval-method"><?php esc_html_e('Approval method', 'petscript-rx-checkout'); ?></label>
+                        <label class="ps-rxc-label" for="ps-rxc-item-approval-method"><?php esc_html_e('How should we get your prescription?', 'petscript-rx-checkout'); ?></label>
                         <select id="ps-rxc-item-approval-method" class="ps-rxc-select">
                             <option value=""><?php esc_html_e('Select…', 'petscript-rx-checkout'); ?></option>
-                            <option value="contact_clinic"><?php esc_html_e('Contact the clinic', 'petscript-rx-checkout'); ?></option>
-                            <option value="mail_prescription"><?php esc_html_e('Mail/fax the prescription', 'petscript-rx-checkout'); ?></option>
+                            <option value="contact_clinic"><?php esc_html_e('Have PetMed Pharmacy contact my vet for approval', 'petscript-rx-checkout'); ?></option>
+                            <option value="mail_prescription"><?php esc_html_e('I will mail/fax the prescription to PetMed Pharmacy myself', 'petscript-rx-checkout'); ?></option>
                         </select>
                     </div>
                 </div>
@@ -230,7 +254,7 @@ if (!defined('ABSPATH')) {
             <button type="button" class="ps-rxc-btn ps-rxc-btn--primary" data-footer-btn="next-review" hidden><?php esc_html_e('Next: Review', 'petscript-rx-checkout'); ?></button>
             <button type="button" id="ps-rxc-item-confirm" class="ps-rxc-btn ps-rxc-btn--primary" data-footer-btn="save" hidden>
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v-3m0 0V9m0 3h3m-3 0H9m9 9H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h9l5 5v11a2 2 0 0 1-2 2Z"/></svg>
-                <?php esc_html_e('Save prescription information', 'petscript-rx-checkout'); ?>
+                <?php esc_html_e('Save pet / vet info', 'petscript-rx-checkout'); ?>
             </button>
         </div>
 

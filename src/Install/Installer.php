@@ -44,20 +44,28 @@ final class Installer
             KEY customer_id (customer_id)
         ) {$charsetCollate};";
 
+        // customer_id = 0 marks a shared directory clinic (CSV import / promoted).
+        // Existing rows predate the status column; the 'approved' default keeps
+        // every already-saved customer clinic working after the upgrade.
         $sqlClinics = "CREATE TABLE {$clinics} (
             id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
             customer_id BIGINT UNSIGNED NOT NULL,
             name VARCHAR(255) NOT NULL,
+            vet_first_name VARCHAR(100) NULL,
+            vet_last_name VARCHAR(100) NULL,
             phone VARCHAR(30) NULL,
             address VARCHAR(500) NULL,
             city VARCHAR(100) NULL,
             state VARCHAR(100) NULL,
             postal_code VARCHAR(20) NULL,
             country VARCHAR(2) NULL,
+            status VARCHAR(20) NOT NULL DEFAULT 'approved',
             created_at DATETIME NOT NULL,
             updated_at DATETIME NOT NULL,
             PRIMARY KEY  (id),
-            KEY customer_id (customer_id)
+            KEY customer_id (customer_id),
+            KEY status (status),
+            KEY postal_code (postal_code)
         ) {$charsetCollate};";
 
         dbDelta($sqlPatients);

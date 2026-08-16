@@ -84,6 +84,10 @@ final class PayloadMapper
             ],
             'vet_clinic' => [
                 'name' => $clinic['name'] ?? '',
+                // Added in 1.1.0. Confirm the Pharmacy-side validator accepts
+                // (or at minimum ignores) these two keys before relying on them.
+                'vet_first_name' => $clinic['vet_first_name'] ?? null,
+                'vet_last_name' => $clinic['vet_last_name'] ?? null,
                 'phone' => $clinic['phone'] ?? null,
                 'address' => $clinic['address'] ?? null,
                 'city' => $clinic['city'] ?? null,

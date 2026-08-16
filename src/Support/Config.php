@@ -12,7 +12,7 @@ final class Config
 
     public const DB_VERSION_OPTION = 'ps_rxc_db_version';
 
-    public const DB_VERSION = '1.0.0';
+    public const DB_VERSION = '1.1.1';
 
     public const NONCE_ACTION = 'ps_rxc_nonce';
 
@@ -36,6 +36,21 @@ final class Config
     public const APPROVAL_METHODS = ['contact_clinic', 'mail_prescription'];
 
     public const SHIP_BILL_TYPES = ['patient', 'clinic'];
+
+    public const SPECIES = ['Dog', 'Cat', 'Small Pet', 'Horse', 'Reptile', 'Bird', 'Fish', 'Farm Animal'];
+
+    // Clinic lifecycle:
+    //   approved + customer_id = 0  -> shared directory clinic (CSV import or promoted)
+    //   approved + customer_id > 0  -> customer's own clinic, fully usable
+    //   pending  + customer_id > 0  -> customer-added, usable by that customer,
+    //                                  waiting in the admin approval queue
+    //   private  + customer_id > 0  -> reviewed, kept usable for the customer,
+    //                                  but never promoted to the directory
+    public const CLINIC_STATUS_APPROVED = 'approved';
+
+    public const CLINIC_STATUS_PENDING = 'pending';
+
+    public const CLINIC_STATUS_PRIVATE = 'private';
 
     public static function patientsTable(): string
     {

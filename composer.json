@@ -1,6 +1,6 @@
 {
     "name": "petscript/rx-checkout",
-    "description": "Requiere datos de mascota y veterinario antes de pagar productos con receta, y envia la Rx a PetScript Pharmacy.",
+    "description": "Requires pet and veterinarian information before checkout on prescription products, and sends the Rx to PetScript Pharmacy.",
     "type": "wordpress-plugin",
     "license": "proprietary",
     "require": {
