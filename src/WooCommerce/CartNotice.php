@@ -38,23 +38,19 @@ final class CartNotice
         }
 
         $gmapsKey = Settings::googleMapsApiKey();
-        $panelDeps = [];
 
-        if ($gmapsKey !== '') {
-            wp_enqueue_script(
-                'ps-rxc-gmaps',
-                'https://maps.googleapis.com/maps/api/js?key=' . rawurlencode($gmapsKey) . '&libraries=places',
-                [],
-                null,
-                true
-            );
-            $panelDeps[] = 'ps-rxc-gmaps';
-        }
+        // Don't enqueue the Google Maps script here. This site also runs
+        // other address-autocomplete plugins that load
+        // maps.googleapis.com/maps/api/js on their own; loading it a
+        // second time re-registers its Web Components and throws console
+        // errors, breaking autocomplete on this page. panel.js is handed
+        // the API key below and checks at runtime whether Maps is already
+        // loading/loaded before ever adding its own script tag.
 
         // Bust the browser cache off each file's mtime instead of the static
         // plugin version, so edits during development are always picked up.
         wp_enqueue_style('ps-rxc-panel', PS_RXC_URL . 'assets/build/panel.css', [], (string) filemtime(PS_RXC_DIR . '/assets/build/panel.css'));
-        wp_enqueue_script('ps-rxc-panel', PS_RXC_URL . 'assets/build/panel.js', $panelDeps, (string) filemtime(PS_RXC_DIR . '/assets/build/panel.js'), true);
+        wp_enqueue_script('ps-rxc-panel', PS_RXC_URL . 'assets/build/panel.js', [], (string) filemtime(PS_RXC_DIR . '/assets/build/panel.js'), true);
 
         $items = [];
 
@@ -78,6 +74,7 @@ final class CartNotice
             'nonce' => wp_create_nonce(Config::NONCE_ACTION),
             'items' => $items,
             'hasPlaces' => $gmapsKey !== '',
+            'gmapsApiKey' => $gmapsKey,
             'billingZip' => $billingZip,
             'i18n' => [
                 'notSelected' => __('Not selected', 'petscript-rx-checkout'),

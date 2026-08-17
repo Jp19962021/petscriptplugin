@@ -12,6 +12,14 @@ use PetScript\RxCheckout\Support\Settings;
  * Only active when a Google Maps API key is configured. Targets the classic
  * checkout field IDs (billing_address_1 / shipping_address_1); the block
  * checkout renders its own React fields and is not covered here.
+ *
+ * Does NOT enqueue the Google Maps script itself. This site also runs
+ * other address-autocomplete plugins that load maps.googleapis.com/maps/api/js
+ * on their own; loading it a second time re-registers its Web Components
+ * and throws console errors (and can break autocomplete on this field
+ * entirely). Instead the API key is handed to checkout-address.js, which
+ * checks at runtime whether Maps is already loading/loaded before ever
+ * adding its own script tag.
  */
 final class CheckoutAddressAutocomplete
 {
@@ -33,19 +41,15 @@ final class CheckoutAddressAutocomplete
         }
 
         wp_enqueue_script(
-            'ps-rxc-gmaps',
-            'https://maps.googleapis.com/maps/api/js?key=' . rawurlencode($key) . '&libraries=places',
-            [],
-            null,
-            true
-        );
-
-        wp_enqueue_script(
             'ps-rxc-checkout-address',
             PS_RXC_URL . 'assets/build/checkout-address.js',
-            ['ps-rxc-gmaps'],
+            [],
             (string) filemtime(PS_RXC_DIR . '/assets/build/checkout-address.js'),
             true
         );
+
+        wp_localize_script('ps-rxc-checkout-address', 'psRxcCheckoutAddress', [
+            'apiKey' => $key,
+        ]);
     }
 }

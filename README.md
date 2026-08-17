@@ -2,7 +2,7 @@
 
 WooCommerce plugin that requires pet and veterinarian information before checkout on prescription-tagged products, and submits the resulting Rx to PetScript Pharmacy.
 
-Current version: 1.1.1
+Current version: 1.1.2
 
 ## Structure
 
@@ -22,3 +22,19 @@ Current version: 1.1.1
 ## Install
 
 Upload the zip via WP Admin → Plugins → Add New → Upload Plugin. Requires WooCommerce and PHP 8.1+.
+
+## Changelog
+
+- 1.1.2 — Stop loading our own Google Maps script on checkout and the cart
+  modal. This site also runs other address-autocomplete plugins that load
+  maps.googleapis.com/maps/api/js on their own; a second copy re-registers
+  its Web Components and throws console errors. checkout-address.js and
+  panel.js now check at runtime whether Maps is already loading/loaded
+  before adding their own script tag.
+- 1.1.1 — DB_VERSION bump to force the clinic table migration
+  (vet_first_name/vet_last_name/status columns) to re-run on sites where
+  it didn't apply cleanly on first install.
+- 1.1.0 — Species dropdown, PetMed Pharmacy approval language, Add
+  Pet/Vet Info relabel, Google Places address autocomplete, required vet
+  first/last name, searchable clinic directory with CSV import and admin
+  approval queue.

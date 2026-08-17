@@ -428,17 +428,63 @@
 		}
 
 		// -- Google Places autocomplete on the clinic address field ------------
+		//
+		// This site also runs other address-autocomplete plugins that load
+		// maps.googleapis.com/maps/api/js on their own. Loading it a second
+		// time re-registers its Web Components and throws console errors
+		// ("Element with name ... already defined"), breaking autocomplete
+		// here. So: never assume we're the one loading it — check for an
+		// existing script tag/instance first, reuse it if present, and only
+		// load our own copy if nobody else has.
 
-		if (psRxcPanel.hasPlaces && window.google && google.maps && google.maps.places) {
-			attachClinicAddressAutocomplete();
+		if (psRxcPanel.hasPlaces) {
+			ensureGoogleMaps(psRxcPanel.gmapsApiKey, attachClinicAddressAutocomplete);
+		}
+
+		function ensureGoogleMaps(apiKey, callback) {
+			if (window.google && window.google.maps && window.google.maps.places) {
+				callback();
+				return;
+			}
+
+			var existing = document.querySelector('script[src*="maps.googleapis.com/maps/api/js"]');
+
+			if (existing) {
+				waitForGoogleMaps(callback);
+				return;
+			}
+
+			var script = document.createElement('script');
+			script.src = 'https://maps.googleapis.com/maps/api/js?key=' + encodeURIComponent(apiKey) + '&libraries=places';
+			script.async = true;
+			script.onload = callback;
+			document.head.appendChild(script);
+		}
+
+		function waitForGoogleMaps(callback, attemptsLeft) {
+			attemptsLeft = attemptsLeft === undefined ? 40 : attemptsLeft; // ~6s at 150ms
+
+			if (window.google && window.google.maps && window.google.maps.places) {
+				callback();
+				return;
+			}
+
+			if (attemptsLeft <= 0) {
+				return;
+			}
+
+			window.setTimeout(function () {
+				waitForGoogleMaps(callback, attemptsLeft - 1);
+			}, 150);
 		}
 
 		function attachClinicAddressAutocomplete() {
 			var addressInput = document.getElementById('ps-rxc-ic-address');
 
-			if (!addressInput) {
+			if (!addressInput || addressInput.dataset.psRxcAutocompleteAttached) {
 				return;
 			}
+			addressInput.dataset.psRxcAutocompleteAttached = '1';
 
 			var autocomplete = new google.maps.places.Autocomplete(addressInput, {
 				types: ['address'],
